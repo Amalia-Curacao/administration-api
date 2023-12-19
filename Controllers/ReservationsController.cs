@@ -37,7 +37,7 @@ public class ReservationsController : Controller
 	/// Status 400 (Bad request) with error message, when the reservation could not be found.
 	/// </returns>
 	[HttpGet($"[controller]/[action]/{{{nameof(Reservation.Id)}}}")]
-	public async Task<ObjectResult> Get(int Id)
+	public async Task<ObjectResult> Get([FromRoute] int Id)
 	{
 		var reservation = await _crud.Get(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) }));
 		return reservation is null ? BadRequest(ReservationNotFound) : Ok(reservation);
@@ -49,7 +49,7 @@ public class ReservationsController : Controller
 	/// Status 400 (Bad request) with error message, when the reservation overlaps another, or properties are invalid.
 	/// </returns>
 	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Create(Reservation reservation)
+	public async Task<ObjectResult> Create([FromBody] Reservation reservation)
 	{
 		// Validates properties
 		var result = _validator.Validate(reservation);
@@ -67,7 +67,7 @@ public class ReservationsController : Controller
 	/// Status 400 (Bad request) with error message, when the reservation overlaps another, or properties are invalid.
 	/// </returns>
 	[HttpPut("[controller]/[action]")]
-	public async Task<ObjectResult> Edit(Reservation reservation)
+	public async Task<ObjectResult> Edit([FromBody] Reservation reservation)
 	{
 		// Validates properties
 		var result = _validator.Validate(reservation);	
@@ -87,7 +87,7 @@ public class ReservationsController : Controller
 	/// Status 400 (Bad request) with error message, when the reservation does not exist.
 	/// </returns>
 	[HttpDelete($"[controller]/[action]/{{{nameof(Reservation.Id)}}}")]
-	public async Task<ObjectResult> Delete(int Id)
+	public async Task<ObjectResult> Delete([FromRoute] int Id)
 		=> Ok(await _crud.Delete(new HashSet<Key>(new Key[] {new(nameof(Reservation.Id), Id)})));
 
 
@@ -95,7 +95,7 @@ public class ReservationsController : Controller
 	/// <returns> Returns true if the reservation can fit in the desired room. </returns>
 	/// <remarks> Uses the room foreign key in the properties to check rooms. </remarks>
 	[HttpPost("[controller]/[action]")]
-	public async Task<bool> CanFit(Reservation reservation)
+	public async Task<bool> CanFit([FromBody] Reservation reservation)
 	{
 		reservation = (await _crud.Add(true, reservation))![^1];
 		var result = reservation.Room!.CanFit(reservation);
