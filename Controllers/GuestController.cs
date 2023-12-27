@@ -55,7 +55,7 @@ public class GuestController : Controller
 	/// Status 200 (OK) with the edited guest, when the guest has been edited.
 	/// Status 400 (Bad request) with error message, when properties are invalid.
 	/// </returns>
-	[HttpPut("[controller]/[action]")]
+	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Edit([FromBody] Guest person)
 	{
 		var result = _validator.Validate(person);
