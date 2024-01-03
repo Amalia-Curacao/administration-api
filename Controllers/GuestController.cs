@@ -86,7 +86,7 @@ public class GuestController : Controller
 				await Edit(edit);
 			}
 			// Add guests that are not in the old list
-			foreach (var add in guests.Where(g => reservationGuests.Any(g2 => g.Id < 0)))
+			foreach (var add in guests.Where(g => g.Id < 0))
 			{
 				await Create(add);
 			}
