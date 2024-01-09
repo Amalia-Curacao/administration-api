@@ -105,11 +105,13 @@ public class ReservationsController : Controller
 	public async Task<ObjectResult> Delete([FromRoute] int Id)
 		=> Ok(await _crud.Delete(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) })));
 
-	private async Task<bool> CanFit(Reservation reservation)
-		=> !(await _crud.GetAll()).Any(r => 
-			r.Overlap(reservation) 
-		&&	r.RoomScheduleId == reservation.RoomScheduleId 
-		&&	r.RoomNumber == reservation.RoomNumber 
-		&&	r.Id != reservation.Id);
+	// Checks if the reservation can fit in the room from the same schedule and ignoers reservation with the same Id.
+	private async Task<bool> CanFit([FromBody] Reservation reservation)
+		=> !(await _crud.GetAll())
+			.Where(r => 
+				r.ScheduleId == reservation.ScheduleId && 
+				r.RoomNumber == reservation.RoomNumber && 
+				r.Id != reservation.Id)
+			.Any(r => r.Overlap(reservation));
 }
  
