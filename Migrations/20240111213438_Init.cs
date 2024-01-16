@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,9 +16,9 @@ namespace Scheduler.Api.Migrations
                 name: "Schedules",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -28,10 +29,10 @@ namespace Scheduler.Api.Migrations
                 name: "Rooms",
                 columns: table => new
                 {
-                    Number = table.Column<int>(type: "int", nullable: false),
-                    ScheduleId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    Floor = table.Column<int>(type: "int", nullable: false)
+                    Number = table.Column<int>(type: "integer", nullable: false),
+                    ScheduleId = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Floor = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,20 +49,20 @@ namespace Scheduler.Api.Migrations
                 name: "Reservations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoomNumber = table.Column<int>(type: "int", nullable: true),
-                    RoomScheduleId = table.Column<int>(type: "int", nullable: true),
-                    ScheduleId = table.Column<int>(type: "int", nullable: true),
-                    CheckIn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CheckOut = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    RoomType = table.Column<int>(type: "int", nullable: true),
-                    FlightArrivalNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FlightDepartureNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FlightArrivalTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    FlightDepartureTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    BookingSource = table.Column<int>(type: "int", nullable: true),
-                    Remarks = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoomNumber = table.Column<int>(type: "integer", nullable: true),
+                    RoomScheduleId = table.Column<int>(type: "integer", nullable: true),
+                    ScheduleId = table.Column<int>(type: "integer", nullable: true),
+                    CheckIn = table.Column<DateOnly>(type: "date", nullable: true),
+                    CheckOut = table.Column<DateOnly>(type: "date", nullable: true),
+                    RoomType = table.Column<int>(type: "integer", nullable: true),
+                    FlightArrivalNumber = table.Column<string>(type: "text", nullable: true),
+                    FlightDepartureNumber = table.Column<string>(type: "text", nullable: true),
+                    FlightArrivalTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
+                    FlightDepartureTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
+                    BookingSource = table.Column<int>(type: "integer", nullable: true),
+                    Remarks = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -83,14 +84,14 @@ namespace Scheduler.Api.Migrations
                 name: "Person",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ReservationId = table.Column<int>(type: "int", nullable: true),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Age = table.Column<int>(type: "int", nullable: true),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Prefix = table.Column<int>(type: "int", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ReservationId = table.Column<int>(type: "integer", nullable: true),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
+                    Age = table.Column<int>(type: "integer", nullable: true),
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    Prefix = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {

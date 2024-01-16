@@ -21,9 +21,16 @@ public class ScheduleDb : DatabaseContext
     {
         DatabaseSrc.Sqlite => InitializeAsSqlite((SqliteOptions)options),
         DatabaseSrc.SqlServer => InitializeAsSqlServer((SqlServerOptions)options),
+        DatabaseSrc.PostgreSql => InitializeAsPostgreSql((PostgreSqlOptions)options),
         _ => throw new NotImplementedException("Database src is not supported.")
     };
     
+    private static ScheduleDb InitializeAsPostgreSql(PostgreSqlOptions options)
+    {
+		options.DbOptions = PostgreSqlContextTool.InitDbContextOptions<ScheduleDb>(options);
+		return new ScheduleDb(options);
+	}   
+
     private static ScheduleDb InitializeAsSqlite(SqliteOptions options)
     {
         options.DbOptions = SqliteContextTool.InitDbContextOptions<ScheduleDb>(options);
@@ -42,10 +49,13 @@ public class ScheduleDb : DatabaseContext
         switch (Options.DatabaseSrc)
         {
             case DatabaseSrc.Sqlite:
-                SqliteContextTool.OnConfiguring(optionsBuilder, (SqliteOptions)Options);
+				SqliteContextTool.OnConfiguring(optionsBuilder, (SqliteOptions)Options);
                 break;
             case DatabaseSrc.SqlServer:
-                SqlServerContextTool.OnConfiguring(optionsBuilder, (SqlServerOptions)Options);
+				SqlServerContextTool.OnConfiguring(optionsBuilder, (SqlServerOptions)Options);
+                break;
+            case DatabaseSrc.PostgreSql:
+				PostgreSqlContextTool.OnConfiguring(optionsBuilder, (PostgreSqlOptions)Options);
                 break;
             default:
                 throw new NotImplementedException("Database src is not supported.");
@@ -58,7 +68,7 @@ public class ScheduleDb : DatabaseContext
         switch (Options.DatabaseSrc)
         {
             case DatabaseSrc.SqlServer:
-                SqlServerContextTool.ConfigureConventions(configurationBuilder);
+                ConfigureConventions(configurationBuilder);
                 break;
             default:
                 break;

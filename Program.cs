@@ -8,9 +8,9 @@ using Scheduler.Api.Data.Validators.Abstract;
 var builder = WebApplication.CreateBuilder(args);
 
 // Register database context
-var connectionString = builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")
-    ?? throw new NullReferenceException($"The azure connection string cannot be null.");
-var options = new SqlServerOptions() { ConnectionString = connectionString };
+var connectionString = builder.Configuration.GetConnectionString("POSTGRESQL_CONNECTIONSTRING")
+    ?? throw new NullReferenceException($"The database connection string cannot be null.");
+var options = new PostgreSqlOptions() { ConnectionString = connectionString };
 builder.Services.AddDbContext<ScheduleDb>(_ => ScheduleDb.Create(options));
 
 // Register validators
