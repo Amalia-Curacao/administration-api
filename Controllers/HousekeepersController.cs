@@ -3,18 +3,16 @@ using Creative.Api.Implementations.EntityFrameworkCore;
 using Creative.Api.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
-using System.Linq;
 
 namespace Scheduler.Api.Controllers;
 
-public class HousekeeperController : Controller
+public class HousekeepersController : Controller
 {
 	public ICrud<Housekeeper> _crud { get; init; }
 	public IValidator<Housekeeper> _validator { get; init; }
-	public HousekeeperController(ScheduleDb db, IValidator<Housekeeper> validator)
+	public HousekeepersController(ScheduleDb db, IValidator<Housekeeper> validator)
 	{
 		_crud = new Crud<Housekeeper>(db);
 		_validator = validator;

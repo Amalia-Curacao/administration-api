@@ -8,13 +8,13 @@ using Scheduler.Api.Data.Models;
 
 namespace Scheduler.Api.Controllers;
 
-public class GuestController : Controller
+public class GuestsController : Controller
 {
 	private readonly ICrud<Guest> _crud;
 	private readonly IValidator<Guest> _validator;
 	private readonly ValidationException PersonNotFound = new($"{nameof(Guest)} could not be located.");
 
-	public GuestController(ScheduleDb db, IValidator<Guest> validator)
+	public GuestsController(ScheduleDb db, IValidator<Guest> validator)
 	{
 		_crud = new Crud<Guest>(db);
 		_validator = validator;
