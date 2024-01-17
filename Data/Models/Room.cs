@@ -33,6 +33,8 @@ public sealed class Room : IModel
 
     [InverseProperty(nameof(Reservation.Room))]
     public ICollection<Reservation>? Reservations { get; private set; } = new List<Reservation>();
+    [InverseProperty(nameof(HousekeepingTask.Room))]
+    public ICollection<HousekeepingTask>? HousekeepingTasks { get; set; } = new List<HousekeepingTask>();
 
     /// <summary> Checks if the room can fit the reservation. </summary>
     /// <returns> Returns true if the room can fit the reservation. </returns>

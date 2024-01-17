@@ -26,6 +26,27 @@ namespace Scheduler.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Housekeepers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    ScheduleId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Housekeepers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Housekeepers_Schedules_ScheduleId",
+                        column: x => x.ScheduleId,
+                        principalTable: "Schedules",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Rooms",
                 columns: table => new
                 {
@@ -43,6 +64,37 @@ namespace Scheduler.Api.Migrations
                         principalTable: "Schedules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HousekeepingTasks",
+                columns: table => new
+                {
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    RoomNumber = table.Column<int>(type: "integer", nullable: false),
+                    RoomScheduleId = table.Column<int>(type: "integer", nullable: true),
+                    ScheduleId = table.Column<int>(type: "integer", nullable: true),
+                    Type = table.Column<int>(type: "integer", nullable: true),
+                    HousekeeperId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HousekeepingTasks", x => new { x.Date, x.RoomNumber });
+                    table.ForeignKey(
+                        name: "FK_HousekeepingTasks_Housekeepers_HousekeeperId",
+                        column: x => x.HousekeeperId,
+                        principalTable: "Housekeepers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_HousekeepingTasks_Rooms_RoomNumber_RoomScheduleId",
+                        columns: x => new { x.RoomNumber, x.RoomScheduleId },
+                        principalTable: "Rooms",
+                        principalColumns: new[] { "Number", "ScheduleId" });
+                    table.ForeignKey(
+                        name: "FK_HousekeepingTasks_Schedules_ScheduleId",
+                        column: x => x.ScheduleId,
+                        principalTable: "Schedules",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -68,11 +120,10 @@ namespace Scheduler.Api.Migrations
                 {
                     table.PrimaryKey("PK_Reservations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reservations_Rooms_RoomNumber_ScheduleId",
-                        columns: x => new { x.RoomNumber, x.ScheduleId },
+                        name: "FK_Reservations_Rooms_RoomNumber_RoomScheduleId",
+                        columns: x => new { x.RoomNumber, x.RoomScheduleId },
                         principalTable: "Rooms",
-                        principalColumns: new[] { "Number", "ScheduleId" },
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumns: new[] { "Number", "ScheduleId" });
                     table.ForeignKey(
                         name: "FK_Reservations_Schedules_ScheduleId",
                         column: x => x.ScheduleId,
@@ -81,7 +132,7 @@ namespace Scheduler.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Person",
+                name: "Guests",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -95,24 +146,43 @@ namespace Scheduler.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Person", x => x.Id);
+                    table.PrimaryKey("PK_Guests", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Person_Reservations_ReservationId",
+                        name: "FK_Guests_Reservations_ReservationId",
                         column: x => x.ReservationId,
                         principalTable: "Reservations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Person_ReservationId",
-                table: "Person",
+                name: "IX_Guests_ReservationId",
+                table: "Guests",
                 column: "ReservationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reservations_RoomNumber_ScheduleId",
+                name: "IX_Housekeepers_ScheduleId",
+                table: "Housekeepers",
+                column: "ScheduleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HousekeepingTasks_HousekeeperId",
+                table: "HousekeepingTasks",
+                column: "HousekeeperId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HousekeepingTasks_RoomNumber_RoomScheduleId",
+                table: "HousekeepingTasks",
+                columns: new[] { "RoomNumber", "RoomScheduleId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HousekeepingTasks_ScheduleId",
+                table: "HousekeepingTasks",
+                column: "ScheduleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reservations_RoomNumber_RoomScheduleId",
                 table: "Reservations",
-                columns: new[] { "RoomNumber", "ScheduleId" });
+                columns: new[] { "RoomNumber", "RoomScheduleId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_ScheduleId",
@@ -129,10 +199,16 @@ namespace Scheduler.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Person");
+                name: "Guests");
+
+            migrationBuilder.DropTable(
+                name: "HousekeepingTasks");
 
             migrationBuilder.DropTable(
                 name: "Reservations");
+
+            migrationBuilder.DropTable(
+                name: "Housekeepers");
 
             migrationBuilder.DropTable(
                 name: "Rooms");
