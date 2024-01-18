@@ -4,6 +4,6 @@ public enum HousekeepingTaskType
 {
 	None = 0,
 	Towels = 1,
-	BedSheets = 2,
+	Bedsheets = 2,
 	All = 3,
 }
