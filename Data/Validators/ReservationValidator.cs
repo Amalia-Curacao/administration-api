@@ -15,5 +15,9 @@ internal sealed class ReservationValidator : AbstractValidator<Reservation>
 			.LessThan(reservation => reservation.CheckOut).WithMessage($"Check-in must be before check out.");
 		RuleFor(reservation => reservation.RoomNumber)
 			.NotEmpty().WithMessage($"Room/apartment number is required.");
+		RuleFor(reservation => reservation.RoomScheduleId)
+			.NotEmpty().WithMessage($"Room schedule id is required.");
+		RuleFor(reservation => reservation.ScheduleId)
+			.NotEmpty().WithMessage($"Schedule id is required.");
 	}
 }

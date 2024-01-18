@@ -19,6 +19,7 @@ public class HousekeepingTask : IModel
 	[ForeignKey(nameof(Schedule.Id))]
 	public int? ScheduleId { get; set; }
 	public Schedule? Schedule { get; set; }
+	[EnumDataType(typeof(HousekeepingTaskType))]
 	public HousekeepingTaskType? Type { get; set; } = HousekeepingTaskType.None;
 	[ForeignKey(nameof(Housekeeper.Id))]
 	public int? HousekeeperId { get; set; }

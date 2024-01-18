@@ -85,5 +85,47 @@ public class ScheduleDb : DatabaseContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Schedule>()
+            .HasMany(s => s.Reservations)
+            .WithOne(r => r.Schedule)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Schedule>()
+            .HasMany(s => s.Rooms)
+            .WithOne(r => r.Schedule)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Schedule>()
+            .HasMany(s => s.Housekeepers)
+			.WithOne(h => h.Schedule)
+			.OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Schedule>()
+			.HasMany(s => s.HousekeepingTasks)
+			.WithOne(h => h.Schedule)
+			.OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Reservation>()
+            .HasMany(r => r.Guests)
+            .WithOne(g => g.Reservation)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Room>()
+            .HasMany(r => r.HousekeepingTasks)
+			.WithOne(h => h.Room)
+			.OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Room>()
+            .HasMany(r => r.Reservations)
+			.WithOne(r => r.Room)
+			.OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Housekeeper>()
+			.HasMany(h => h.Tasks)
+            .WithOne(h => h.Housekeeper)
+            .OnDelete(DeleteBehavior.SetNull);
+
+
     }
 }
