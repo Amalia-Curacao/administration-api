@@ -12,15 +12,15 @@ using Scheduler.Api.Data;
 namespace Scheduler.Api.Migrations
 {
     [DbContext(typeof(ScheduleDb))]
-    [Migration("20240111213438_Init")]
-    partial class Init
+    [Migration("20240125150246_HousekeepingTasksForeignKeyFix")]
+    partial class HousekeepingTasksForeignKeyFix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.14")
+                .HasAnnotation("ProductVersion", "7.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -55,7 +55,65 @@ namespace Scheduler.Api.Migrations
 
                     b.HasIndex("ReservationId");
 
-                    b.ToTable("Person");
+                    b.ToTable("Guests");
+                });
+
+            modelBuilder.Entity("Scheduler.Api.Data.Models.Housekeeper", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ScheduleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.ToTable("Housekeepers");
+                });
+
+            modelBuilder.Entity("Scheduler.Api.Data.Models.HousekeepingTask", b =>
+                {
+                    b.Property<DateOnly?>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("RoomNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("HousekeeperId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RoomScheduleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ScheduleId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Date", "RoomNumber");
+
+                    b.HasIndex("HousekeeperId");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.HasIndex("RoomNumber", "RoomScheduleId");
+
+                    b.ToTable("HousekeepingTasks");
                 });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Reservation", b =>
@@ -106,7 +164,7 @@ namespace Scheduler.Api.Migrations
 
                     b.HasIndex("ScheduleId");
 
-                    b.HasIndex("RoomNumber", "ScheduleId");
+                    b.HasIndex("RoomNumber", "RoomScheduleId");
 
                     b.ToTable("Reservations");
                 });
@@ -159,17 +217,51 @@ namespace Scheduler.Api.Migrations
                     b.Navigation("Reservation");
                 });
 
+            modelBuilder.Entity("Scheduler.Api.Data.Models.Housekeeper", b =>
+                {
+                    b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
+                        .WithMany("Housekeepers")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Schedule");
+                });
+
+            modelBuilder.Entity("Scheduler.Api.Data.Models.HousekeepingTask", b =>
+                {
+                    b.HasOne("Scheduler.Api.Data.Models.Housekeeper", "Housekeeper")
+                        .WithMany("Tasks")
+                        .HasForeignKey("HousekeeperId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
+                        .WithMany("HousekeepingTasks")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
+                        .WithMany("HousekeepingTasks")
+                        .HasForeignKey("RoomNumber", "RoomScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Housekeeper");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("Schedule");
+                });
+
             modelBuilder.Entity("Scheduler.Api.Data.Models.Reservation", b =>
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Reservations")
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
                         .WithMany("Reservations")
-                        .HasForeignKey("RoomNumber", "ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("RoomNumber", "RoomScheduleId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Room");
 
@@ -187,6 +279,11 @@ namespace Scheduler.Api.Migrations
                     b.Navigation("Schedule");
                 });
 
+            modelBuilder.Entity("Scheduler.Api.Data.Models.Housekeeper", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
             modelBuilder.Entity("Scheduler.Api.Data.Models.Reservation", b =>
                 {
                     b.Navigation("Guests");
@@ -194,11 +291,17 @@ namespace Scheduler.Api.Migrations
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Room", b =>
                 {
+                    b.Navigation("HousekeepingTasks");
+
                     b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Schedule", b =>
                 {
+                    b.Navigation("Housekeepers");
+
+                    b.Navigation("HousekeepingTasks");
+
                     b.Navigation("Reservations");
 
                     b.Navigation("Rooms");

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Scheduler.Api.Data;
@@ -11,13 +12,15 @@ using Scheduler.Api.Data;
 namespace Scheduler.Api.Migrations
 {
     [DbContext(typeof(ScheduleDb))]
-    partial class ScheduleDbModelSnapshot : ModelSnapshot
+    [Migration("20240117132618_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.15")
+                .HasAnnotation("ProductVersion", "7.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -208,8 +211,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Reservation", "Reservation")
                         .WithMany("Guests")
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ReservationId");
 
                     b.Navigation("Reservation");
                 });
@@ -218,8 +220,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Housekeepers")
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ScheduleId");
 
                     b.Navigation("Schedule");
                 });
@@ -228,18 +229,15 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Housekeeper", "Housekeeper")
                         .WithMany("Tasks")
-                        .HasForeignKey("HousekeeperId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("HousekeeperId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("HousekeepingTasks")
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ScheduleId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
                         .WithMany("HousekeepingTasks")
-                        .HasForeignKey("RoomNumber", "RoomScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("RoomNumber", "RoomScheduleId");
 
                     b.Navigation("Housekeeper");
 
@@ -252,13 +250,11 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Reservations")
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ScheduleId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
                         .WithMany("Reservations")
-                        .HasForeignKey("RoomNumber", "RoomScheduleId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("RoomNumber", "RoomScheduleId");
 
                     b.Navigation("Room");
 

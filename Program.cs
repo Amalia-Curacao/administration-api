@@ -14,9 +14,11 @@ var options = new PostgreSqlOptions() { ConnectionString = connectionString };
 builder.Services.AddDbContext<ScheduleDb>(_ => ScheduleDb.Create(options));
 
 // Register validators
-builder.Services.AddScoped<IValidator<Guest>, PersonValidator>();
+builder.Services.AddScoped<IValidator<Guest>, GuestValidator>();
 builder.Services.AddScoped<IValidator<Reservation>, ReservationValidator>();
 builder.Services.AddScoped<IValidator<Room>, RoomValidator>();  
+builder.Services.AddScoped<IValidator<Housekeeper>, HousekeeperValidator>();
+builder.Services.AddScoped<IValidator<HousekeepingTask>, HousekeepingTaskValidator>();
 builder.Services.AddScoped<RelationshipValidator<Reservation>, ReservationRelationshipValidator>();
 
 // Add services to the container.

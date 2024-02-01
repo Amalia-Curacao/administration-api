@@ -16,12 +16,16 @@ public sealed class Schedule : IModel
 
     [InverseProperty(nameof(Room.Schedule))]
     public ICollection<Room>? Rooms { get; set; } = new HashSet<Room>();
+    [InverseProperty(nameof(Housekeeper.Schedule))]
+    public ICollection<Housekeeper>? Housekeepers { get; set; } = new List<Housekeeper>();
+    [InverseProperty(nameof(HousekeepingTask.Schedule))]
+    public ICollection<HousekeepingTask>? HousekeepingTasks { get; set; } = new List<HousekeepingTask>();
 
     [Display(Name = "Name")]
     public string? Name { get; set; }
 
-	[Obsolete("Was part of an old implementation for eager loading.")]
-	public static IQueryable<T> IncludeAll<T>(DbSet<T> values) where T : class 
+    [Obsolete("Was part of an old implementation for eager loading.")]
+    public static IQueryable<T> IncludeAll<T>(DbSet<T> values) where T : class
         => values
         .Include(nameof(Reservations))
         .Include($"{nameof(Reservations)}.{nameof(Reservation.Guests)}")
@@ -31,12 +35,9 @@ public sealed class Schedule : IModel
         => Id = null;
 
 	public void SetPrimaryKey(HashSet<Key> keys)
-	{
-        Id = keys.Single(key => key.Name == nameof(Id)).Value as int?;
-	}
+        => Id = keys.Single(key => key.Name == nameof(Id)).Value as int?;
 
 	public HashSet<Key> GetPrimaryKey()
-	{
-		return new HashSet<Key> { new Key(nameof(Id), Id) };
-	}
+        => new HashSet<Key> { new Key(nameof(Id), Id) };
+	
 }

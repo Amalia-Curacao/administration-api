@@ -37,6 +37,8 @@ public sealed class RoomsController : Controller
 		=> Ok(JsonSerializer.Serialize(await _db.Rooms
 			.Include(r => r.Reservations!)
 			.ThenInclude(r => r.Guests)
+			.Include(r => r.HousekeepingTasks!)
+			.ThenInclude(h => h.Housekeeper)
 			.Where(r => r.ScheduleId == ScheduleId).ToListAsync(), serializerOptions));
 	
 
