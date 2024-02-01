@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Scheduler.Api.Data.Models;
 
-[PrimaryKey(nameof(Date), nameof(RoomNumber))]
+[PrimaryKey(nameof(Date), nameof(RoomNumber), nameof(RoomScheduleId))]
 [Display(Name = "Housekeeping task")]
 public class HousekeepingTask : IModel
 {
@@ -31,7 +31,8 @@ public class HousekeepingTask : IModel
 		=> new()
 		{
 			new Key(nameof(Date), Date!),
-			new Key(nameof(RoomNumber), RoomNumber!)
+			new Key(nameof(RoomNumber), RoomNumber!),
+			new Key(nameof(RoomScheduleId), RoomScheduleId!)
 		};
 
 	public void SetPrimaryKey(HashSet<Key> keys)

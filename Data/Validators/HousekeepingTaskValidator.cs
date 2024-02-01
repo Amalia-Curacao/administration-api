@@ -11,6 +11,8 @@ public class HousekeepingTaskValidator : AbstractValidator<HousekeepingTask>
 			.NotNull().WithMessage("Date is required.");
 		RuleFor(task => task.RoomNumber)
 			.NotNull().WithMessage("Housekeeping task must have a valid room number.");
+		RuleFor(task => task.RoomScheduleId)
+			.NotNull().WithMessage("Housekeeping task must have a valid room schedule id.");
 		RuleFor(task => task.ScheduleId)
 			.NotNull().WithMessage("Housekeeping task need to belong to a schedule.");
 		RuleFor(task => task.Type)
