@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'amalia-api'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FB4448544175410AAB95DBDCAC5B3C12 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6D33AC99F4574BD6A6BAC4F73757D259 }}
           package: .
