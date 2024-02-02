@@ -65,8 +65,8 @@ public sealed class RoomsController : Controller
 	/// <summary> Updates a <see cref="Room"/>. </summary>
 	/// <returns> Status 200 (OK) with the updated <see cref="Room"/>, when the <see cref="Room"/> has been updated. </returns>
 	/// <remarks> Closed for safetly, to open change private to public. </remarks>
-	[HttpPut($"[controller]/[action]")]
-	private async Task<ObjectResult> Edit([FromBody] Room room)
+	[HttpPost($"[controller]/[action]")]
+	private async Task<ObjectResult> Update([FromBody] Room room)
 		=> Ok(await _crud.Update(room));
 
 	/// <summary> Deletes a <see cref="Room"/>. </summary>

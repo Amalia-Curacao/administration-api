@@ -40,7 +40,7 @@ public class SchedulesController : Controller
 	/// <summary> Api endpoint for editing schedules in the database. </summary>
 	/// <returns> Status 200 (OK) with the edited schedule, when the schedule has been edited.</returns>
 	[HttpPost($"[controller]/[action]")]
-	public async Task<ObjectResult> Edit([FromBody]Schedule schedule)
+	public async Task<ObjectResult> Update([FromBody]Schedule schedule)
 		=> Ok(await _crud.Update(schedule));
 
 	/// <summary> Api endpoint for deleting schedules in the database. </summary>

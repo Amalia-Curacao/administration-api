@@ -82,7 +82,7 @@ public class ReservationsController : Controller
 	/// Status 400 (Bad request) with error message, when the reservation overlaps another, or properties are invalid.
 	/// </returns>
 	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Edit([FromBody] Reservation reservation)
+	public async Task<ObjectResult> Update([FromBody] Reservation reservation)
 	{
 		// Validates properties
 		var result = _validator.Validate(reservation);
