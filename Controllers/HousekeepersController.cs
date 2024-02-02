@@ -59,7 +59,7 @@ public class HousekeepersController : Controller
 	/// Status 400 (Bad request) with error message, when properties are invalid.
 	/// </returns>
 	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Edit([FromBody] Housekeeper housekeeper)
+	public async Task<ObjectResult> Update([FromBody] Housekeeper housekeeper)
 	{
 		var result = _validator.Validate(housekeeper);
 		if (!result.IsValid)

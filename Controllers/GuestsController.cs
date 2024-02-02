@@ -80,10 +80,10 @@ public class GuestsController : Controller
 			{
 				if (delete.Id is not null) await Delete((int)delete.Id);
 			}
-			// Edit guests that are in the new list
+			// Update guests that are in the new list
 			foreach (var edit in guests.Where(g => reservationGuests.Any(g2 => g2.Id == g.Id)))
 			{
-				await Edit(edit);
+				await Update(edit);
 			}
 			// Add guests that are not in the old list
 			foreach (var add in guests.Where(g => g.Id < 0))
@@ -98,10 +98,10 @@ public class GuestsController : Controller
 	/// <summary> Api endpoint for creating guests in the database. </summary>
 	/// <returns> Status 200 (OK) with the new guest, when the guest has been added. </returns>
 	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Create([FromBody] Guest person)
+	public async Task<ObjectResult> Create([FromBody] Guest guest)
 	{
-		var result = _validator.Validate(person);
-		return result.IsValid ? Ok((await _crud.Add(true, person))[0])
+		var result = _validator.Validate(guest);
+		return result.IsValid ? Ok((await _crud.Add(true, guest))[0])
 			: BadRequest(result.Errors);
 	}
 
@@ -111,10 +111,10 @@ public class GuestsController : Controller
 	/// Status 400 (Bad request) with error message, when properties are invalid.
 	/// </returns>
 	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Edit([FromBody] Guest person)
+	public async Task<ObjectResult> Update([FromBody] Guest guest)
 	{
-		var result = _validator.Validate(person);
-		return result.IsValid ? Ok(await _crud.Update(person))
+		var result = _validator.Validate(guest);
+		return result.IsValid ? Ok(await _crud.Update(guest))
 			: BadRequest(result.Errors);
 	}
 
