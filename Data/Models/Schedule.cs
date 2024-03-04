@@ -1,7 +1,6 @@
 ﻿using Creative.Api.Data;
 using Creative.Api.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Scheduler.Api.Data.Models;
@@ -10,26 +9,22 @@ namespace Scheduler.Api.Data.Models;
 public sealed class Schedule : IModel
 {
     public int? Id { get; set; }
-
-    [InverseProperty(nameof(Reservation.Schedule))]
-    public ICollection<Reservation>? Reservations { get; set; } = new List<Reservation>();
+	public string? Name { get; set; }
 
     [InverseProperty(nameof(Room.Schedule))]
     public ICollection<Room>? Rooms { get; set; } = new HashSet<Room>();
-    [InverseProperty(nameof(Housekeeper.Schedule))]
-    public ICollection<Housekeeper>? Housekeepers { get; set; } = new List<Housekeeper>();
+
+    [InverseProperty(nameof(ScheduleInviteLink.Schedule))]
+    public ICollection<ScheduleInviteLink>? InviteLinks { get; set; } = new HashSet<ScheduleInviteLink>();
+
+    [InverseProperty(nameof(Reservation.Schedule))]
+    public ICollection<Reservation>? Reservations { get; set; } = new HashSet<Reservation>();
+
+    [InverseProperty(nameof(Guest.Schedule))]
+    public ICollection<Guest>? Guests { get; set; } = new HashSet<Guest>();
+
     [InverseProperty(nameof(HousekeepingTask.Schedule))]
-    public ICollection<HousekeepingTask>? HousekeepingTasks { get; set; } = new List<HousekeepingTask>();
-
-    [Display(Name = "Name")]
-    public string? Name { get; set; }
-
-    [Obsolete("Was part of an old implementation for eager loading.")]
-    public static IQueryable<T> IncludeAll<T>(DbSet<T> values) where T : class
-        => values
-        .Include(nameof(Reservations))
-        .Include($"{nameof(Reservations)}.{nameof(Reservation.Guests)}")
-        .Include(nameof(Rooms));
+    public ICollection<HousekeepingTask>? HousekeepingTasks { get; set; } = new HashSet<HousekeepingTask>();
 
     public void AutoIncrementPrimaryKey() 
         => Id = null;
@@ -38,6 +33,6 @@ public sealed class Schedule : IModel
         => Id = keys.Single(key => key.Name == nameof(Id)).Value as int?;
 
 	public HashSet<Key> GetPrimaryKey()
-        => new HashSet<Key> { new Key(nameof(Id), Id) };
+		=> new() { new Key(nameof(Id), Id) };
 	
 }

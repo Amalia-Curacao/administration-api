@@ -24,6 +24,9 @@ public sealed class Guest : IModel
     public int? Age { get; set; }
     public string? Note { get; set; } = "";
     public PersonPrefix? Prefix { get; set; } = PersonPrefix.Unknown;
+    [ForeignKey(nameof(Models.Schedule.Id))]
+    public int? ScheduleId { get; set; }
+    public Schedule? Schedule { get; set; }
 
     /// <inheritdoc/>
     public HashSet<Key> GetPrimaryKey() => new() { new Key(nameof(Id), Id!)};
@@ -34,11 +37,4 @@ public sealed class Guest : IModel
     /// <inheritdoc/>
     public void SetPrimaryKey(HashSet<Key> keys)
         => Id = keys.Single(key => key.Name == nameof(Id)).Value as int?;
-
-    [Obsolete("Was part of an old implementation for eager loading.")]
-	public static IQueryable<T> IncludeAll<T>(DbSet<T> values) where T : class
-        => values
-            .Include(nameof(Reservation))
-            .Include($"{nameof(Reservation)}.{nameof(Models.Reservation.Room)}")
-            .Include($"{nameof(Reservation)}.{nameof(Models.Reservation.Schedule)}");
 }

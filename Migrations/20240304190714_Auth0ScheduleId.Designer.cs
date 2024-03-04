@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Scheduler.Api.Data;
@@ -11,9 +12,11 @@ using Scheduler.Api.Data;
 namespace Scheduler.Api.Migrations
 {
     [DbContext(typeof(ScheduleDb))]
-    partial class ScheduleDbModelSnapshot : ModelSnapshot
+    [Migration("20240304190714_Auth0ScheduleId")]
+    partial class Auth0ScheduleId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

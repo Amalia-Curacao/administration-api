@@ -3,35 +3,38 @@ using Creative.Api.Implementations.EntityFrameworkCore;
 using Creative.Api.Interfaces;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
 
 namespace Scheduler.Api.Controllers;
 
+
+[Authorize("role:admin/body=scheduleId")]
+[Authorize("role:owner/body=scheduleId")]
+[Authorize("role:manager/body=scheduleId")]
 public class ReservationsController : Controller
 {
-	private readonly ICrud<Reservation> _crud;
-	private readonly IValidator<Reservation> _validator;
-	private readonly ScheduleDb _db; 
+	private ICrud<Reservation> Crud { get; }
+	private IValidator<Reservation> Validator { get; }
 
-	private static readonly ValidationFailure RoomFull =
+	private static ValidationFailure RoomFull { get; } =
 		new(nameof(Reservation.RoomNumber), "Reservation could not be added, because it was overlapping with an existing reservation.");
-	private static readonly ValidationFailure ReservationNotFound =
+	private static ValidationFailure ReservationNotFound { get; } =
 		new($"{nameof(Reservation.RoomNumber)}", "Reservation could not be located");
 
 	public ReservationsController(ScheduleDb db, IValidator<Reservation> validator)
 	{
-		_crud = new Crud<Reservation>(db);
-		_validator = validator;
-		_db = db;
+		Crud = new Crud<Reservation>(db);
+		Validator = validator;
 	}
 
 	/// <summary> Api endpoint for getting all reservations in the database.</summary>
 	/// <returns> Status 200 (OK) with all reservations in the database.</returns>
 	[HttpGet("[controller]/[action]")]
 	public async Task<ObjectResult> Get()
-		=> Ok(await _crud.GetAll());
+		=> Ok(await Crud.Get());
 
 	/// <summary> Api endpoint for getting all reservations from a room in the database.</summary>
 	/// <returns>
@@ -39,9 +42,9 @@ public class ReservationsController : Controller
 	/// </returns>
 	/// <remarks> Returns empty list when room is not found/does not exist. </remarks>
 	/// <remarks> Closed for safetly, to open change private to public. </remarks>
-	[HttpGet($"[controller]/[action]/{{{nameof(Reservation.RoomScheduleId)}}}/{{{nameof(Reservation.RoomNumber)}}}")]
+	// [HttpGet($"[controller]/[action]/{{{nameof(Reservation.RoomScheduleId)}}}/{{{nameof(Reservation.RoomNumber)}}}")]
 	private async Task<ObjectResult> Get([FromRoute] int RoomScheduleId, [FromRoute] int RoomNumber)
-		=> Ok((await _crud.GetAll()).Where(r => r.RoomScheduleId == RoomScheduleId && r.RoomNumber == RoomNumber));
+		=> Ok(await Crud.Get(r => r.RoomScheduleId == RoomScheduleId && r.RoomNumber == RoomNumber));
 
 
 	/// <summary> Api endpoint for getting a reservation by id.</summary>
@@ -50,10 +53,10 @@ public class ReservationsController : Controller
 	/// Status 400 (Bad request) with error message, when the reservation could not be found.
 	/// </returns>
 	/// <remarks> Closed for safetly, to open change private to public. </remarks>
-	[HttpGet($"[controller]/[action]/{{{nameof(Reservation.Id)}}}")]
+	// [HttpGet($"[controller]/[action]/{{{nameof(Reservation.Id)}}}")]
 	private async Task<ObjectResult> Get([FromRoute] int Id)
 	{
-		var reservation = await _crud.Get(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) }));
+		var reservation = await Crud.Get(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) }));
 		return reservation is null ? BadRequest(ReservationNotFound) : Ok(reservation);
 	}
 
@@ -67,12 +70,12 @@ public class ReservationsController : Controller
 	{
 		if(reservation is null) return BadRequest("Reservation cannot be null.");
 		// Validates properties
-		var result = _validator.Validate(reservation);
+		var result = Validator.Validate(reservation);
 		// Checks if the reservation can fit in the room.
 		if (!await CanFit(reservation)) result.Errors.Add(RoomFull);
 
 		return result.IsValid
-			? Ok((await _crud.Add(true, reservation))[^1])
+			? Ok((await Crud.Add(true, reservation))[^1])
 			: BadRequest(result.Errors);
 	}
 
@@ -85,14 +88,14 @@ public class ReservationsController : Controller
 	public async Task<ObjectResult> Update([FromBody] Reservation reservation)
 	{
 		// Validates properties
-		var result = _validator.Validate(reservation);
+		var result = Validator.Validate(reservation);
 		// Checks if the reservation exists
-		if (await _crud.TryGet(reservation.GetPrimaryKey()) is null) result.Errors.Add(ReservationNotFound);
+		if (await Crud.TryGet(reservation.GetPrimaryKey()) is null) result.Errors.Add(ReservationNotFound);
 		// Checks if the reservation can fit in the room.
 		if (!await CanFit(reservation)) result.Errors.Add(RoomFull);
 
 		return result.IsValid
-			? Ok(await _crud.Update(reservation))
+			? Ok(await Crud.Update(reservation))
 			: BadRequest(result.Errors);
 	}
 
@@ -103,15 +106,14 @@ public class ReservationsController : Controller
 	/// </returns>
 	[HttpDelete($"[controller]/[action]/{{{nameof(Reservation.Id)}}}")]
 	public async Task<ObjectResult> Delete([FromRoute] int Id)
-		=> Ok(await _crud.Delete(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) })));
+		=> Ok(await Crud.Delete(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) })));
 
 	// Checks if the reservation can fit in the room from the same schedule and ignoers reservation with the same Id.
 	private async Task<bool> CanFit([FromBody] Reservation reservation)
-		=> !(await _crud.GetAll())
+		=> !(await Crud.Get())
 			.Where(r => 
 				r.ScheduleId == reservation.ScheduleId && 
 				r.RoomNumber == reservation.RoomNumber && 
 				r.Id != reservation.Id)
 			.Any(r => r.Overlap(reservation));
 }
- 

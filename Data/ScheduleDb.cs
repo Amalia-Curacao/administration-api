@@ -17,32 +17,34 @@ public class ScheduleDb : DatabaseContext
     }
 
     public static ScheduleDb Create(DatabaseContextOptions options)
-    => options.DatabaseSrc switch
     {
-        DatabaseSrc.Sqlite => InitializeAsSqlite((SqliteOptions)options),
-        DatabaseSrc.SqlServer => InitializeAsSqlServer((SqlServerOptions)options),
-        DatabaseSrc.PostgreSql => InitializeAsPostgreSql((PostgreSqlOptions)options),
-        _ => throw new NotImplementedException("Database src is not supported.")
-    };
+        return options.DatabaseSrc switch
+        {
+            DatabaseSrc.Sqlite => InitializeAsSqlite((SqliteOptions)options),
+            DatabaseSrc.SqlServer => InitializeAsSqlServer((SqlServerOptions)options),
+            DatabaseSrc.PostgreSql => InitializeAsPostgreSql((PostgreSqlOptions)options),
+            _ => throw new NotImplementedException("Database src is not supported.")
+        };
+
+		ScheduleDb InitializeAsPostgreSql(PostgreSqlOptions options)
+		{
+			options.DbOptions = PostgreSqlContextTool.InitDbContextOptions<ScheduleDb>(options);
+			return new ScheduleDb(options);
+		}
+
+		ScheduleDb InitializeAsSqlite(SqliteOptions options)
+		{
+			options.DbOptions = SqliteContextTool.InitDbContextOptions<ScheduleDb>(options);
+			return new ScheduleDb(options);
+		}
+
+		ScheduleDb InitializeAsSqlServer(SqlServerOptions options)
+		{
+			options.DbOptions = SqlServerContextTool.InitDbContextOptions<ScheduleDb>(options);
+			return new ScheduleDb(options);
+		}
+	}
     
-    private static ScheduleDb InitializeAsPostgreSql(PostgreSqlOptions options)
-    {
-		options.DbOptions = PostgreSqlContextTool.InitDbContextOptions<ScheduleDb>(options);
-		return new ScheduleDb(options);
-	}   
-
-    private static ScheduleDb InitializeAsSqlite(SqliteOptions options)
-    {
-        options.DbOptions = SqliteContextTool.InitDbContextOptions<ScheduleDb>(options);
-        return new ScheduleDb(options);
-    }
-
-    private static ScheduleDb InitializeAsSqlServer(SqlServerOptions options)
-    {
-        options.DbOptions = SqlServerContextTool.InitDbContextOptions<ScheduleDb>(options);
-        return new ScheduleDb(options);
-    }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
@@ -76,10 +78,11 @@ public class ScheduleDb : DatabaseContext
     }
 
     public DbSet<Schedule> Schedules { get; set; }
-    public DbSet<Reservation> Reservations { get; set; }
     public DbSet<Room> Rooms { get; set; }
-    public DbSet<Guest> Guests { get; set; }
-    public DbSet<Housekeeper> Housekeepers { get; set; }
+	public DbSet<Reservation> Reservations { get; set; }
+	public DbSet<Guest> Guests { get; set; }
+    public DbSet<ScheduleInviteLink> ScheduleInviteLinks { get; set; }
+    public DbSet<User> Users { get; set; }
     public DbSet<HousekeepingTask> HousekeepingTasks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -87,22 +90,12 @@ public class ScheduleDb : DatabaseContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Schedule>()
-            .HasMany(s => s.Reservations)
-            .WithOne(r => r.Schedule)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Schedule>()
             .HasMany(s => s.Rooms)
             .WithOne(r => r.Schedule)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Schedule>()
-            .HasMany(s => s.Housekeepers)
-			.WithOne(h => h.Schedule)
-			.OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Schedule>()
-			.HasMany(s => s.HousekeepingTasks)
+            .HasMany(s => s.InviteLinks)
 			.WithOne(h => h.Schedule)
 			.OnDelete(DeleteBehavior.Cascade);
 
@@ -121,7 +114,7 @@ public class ScheduleDb : DatabaseContext
 			.WithOne(r => r.Room)
 			.OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<Housekeeper>()
+        modelBuilder.Entity<User>()
 			.HasMany(h => h.Tasks)
             .WithOne(h => h.Housekeeper)
             .OnDelete(DeleteBehavior.SetNull);

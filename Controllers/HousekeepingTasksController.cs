@@ -2,20 +2,24 @@
 using Creative.Api.Implementations.EntityFrameworkCore;
 using Creative.Api.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
 
 namespace Scheduler.Api.Controllers;
 
+[Authorize("role:admin/body=scheduleId")]
+[Authorize("role:owner/body=scheduleId")]
+[Authorize("role:manager/body=scheduleId")]
 public class HousekeepingTasksController : Controller
 {
-	private ICrud<HousekeepingTask> _crud { get; init; }
-	private IValidator<HousekeepingTask> _validator { get; init; }
+	private ICrud<HousekeepingTask> Crud { get; }
+	private IValidator<HousekeepingTask> Validator { get; }
 	public HousekeepingTasksController(ScheduleDb db, IValidator<HousekeepingTask> validator)
 	{
-		_crud = new Crud<HousekeepingTask>(db);
-		_validator = validator;
+		Crud = new Crud<HousekeepingTask>(db);
+		Validator = validator;
 	}
 	/// <summary> Creates a new housekeeping task in the database. </summary>
 	/// <returns>
@@ -25,10 +29,10 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Create([FromBody] HousekeepingTask task)
 	{
-		var isValid = _validator.Validate(task);
+		var isValid = Validator.Validate(task);
 		if (!isValid.IsValid)
 			return BadRequest(isValid.Errors);
-		return Ok(await _crud.Add(false, task));
+		return Ok(await Crud.Add(false, task));
 	}
 
 	/// <summary> Updates a housekeeping task in the database. </summary>
@@ -39,10 +43,10 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Update([FromBody] HousekeepingTask task)
 	{
-		var isValid = _validator.Validate(task);
+		var isValid = Validator.Validate(task);
 		if (!isValid.IsValid)
 			return BadRequest(isValid.Errors);
-		return Ok(await _crud.Update(task));
+		return Ok(await Crud.Update(task));
 	}
 
 	/// <summary> Deletes a housekeeping task in the database. </summary>
@@ -51,6 +55,6 @@ public class HousekeepingTasksController : Controller
 	/// </returns>
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Delete([FromBody] HousekeepingTask task)
-		=> Ok(await _crud.Delete(task.GetPrimaryKey()));
+		=> Ok(await Crud.Delete(task.GetPrimaryKey()));
 
 }

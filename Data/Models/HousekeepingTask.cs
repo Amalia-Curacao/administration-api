@@ -11,19 +11,25 @@ namespace Scheduler.Api.Data.Models;
 public class HousekeepingTask : IModel
 {
 	public DateOnly? Date { get; set; }
-	[ForeignKey(nameof(Room.Number))]
-	public int? RoomNumber { get; set; }
-	[ForeignKey(nameof(Room.ScheduleId))]
-	public int? RoomScheduleId { get; set; }
-	public Room? Room { get; set; }
-	[ForeignKey(nameof(Schedule.Id))]
-	public int? ScheduleId { get; set; }
-	public Schedule? Schedule { get; set; }
 	[EnumDataType(typeof(HousekeepingTaskType))]
 	public HousekeepingTaskType? Type { get; set; } = HousekeepingTaskType.None;
+	
+	[ForeignKey(nameof(Room.Number))]
+	public int? RoomNumber { get; set; }
+
+	[ForeignKey(nameof(Room.ScheduleId))]
+	public int? RoomScheduleId { get; set; }
+
+	public Room? Room { get; set; }
+
 	[ForeignKey(nameof(Housekeeper.Id))]
 	public int? HousekeeperId { get; set; }
-	public Housekeeper? Housekeeper { get; set; }
+
+	public User? Housekeeper { get; set; }
+
+	[ForeignKey(nameof(Models.Schedule.Id))]
+	public int? ScheduleId { get; set; }
+	public Schedule? Schedule { get; set; }
 
 	public void AutoIncrementPrimaryKey() { }
 
@@ -37,7 +43,19 @@ public class HousekeepingTask : IModel
 
 	public void SetPrimaryKey(HashSet<Key> keys)
 	{
-		Date = keys.Single(key => key.Name == nameof(Date)).Value as DateOnly?;
-		RoomNumber = keys.Single(key => key.Name == nameof(RoomNumber)).Value as int?;
+		var date = keys.Single(key => key.Name == nameof(Date)).Value;
+		var roomNumber = keys.Single(key => key.Name == nameof(RoomNumber)).Value;
+		var roomScheduleId = keys.Single(key => key.Name == nameof(RoomScheduleId)).Value;
+
+		if (date is DateOnly d &&
+			roomNumber is int rn &&
+			roomScheduleId is int rsi)
+		{
+			Date = d;
+			RoomNumber = rn;
+			RoomScheduleId = rsi;
+		}
+
+		throw new Exception("Invalid key type.");
 	}
 }

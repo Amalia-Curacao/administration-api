@@ -58,7 +58,7 @@ namespace Scheduler.Api.Migrations
                     b.ToTable("Guests");
                 });
 
-            modelBuilder.Entity("Scheduler.Api.Data.Models.Housekeeper", b =>
+            modelBuilder.Entity("Scheduler.Api.Data.Models.User", b =>
                 {
                     b.Property<int?>("Id")
                         .ValueGeneratedOnAdd()
@@ -217,7 +217,7 @@ namespace Scheduler.Api.Migrations
                     b.Navigation("Reservation");
                 });
 
-            modelBuilder.Entity("Scheduler.Api.Data.Models.Housekeeper", b =>
+            modelBuilder.Entity("Scheduler.Api.Data.Models.User", b =>
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Housekeepers")
@@ -229,7 +229,7 @@ namespace Scheduler.Api.Migrations
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.HousekeepingTask", b =>
                 {
-                    b.HasOne("Scheduler.Api.Data.Models.Housekeeper", "Housekeeper")
+                    b.HasOne("Scheduler.Api.Data.Models.User", "User")
                         .WithMany("Tasks")
                         .HasForeignKey("HousekeeperId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -244,7 +244,7 @@ namespace Scheduler.Api.Migrations
                         .HasForeignKey("RoomNumber", "RoomScheduleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Housekeeper");
+                    b.Navigation("User");
 
                     b.Navigation("Room");
 
@@ -279,7 +279,7 @@ namespace Scheduler.Api.Migrations
                     b.Navigation("Schedule");
                 });
 
-            modelBuilder.Entity("Scheduler.Api.Data.Models.Housekeeper", b =>
+            modelBuilder.Entity("Scheduler.Api.Data.Models.User", b =>
                 {
                     b.Navigation("Tasks");
                 });
