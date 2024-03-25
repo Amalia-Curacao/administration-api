@@ -12,8 +12,8 @@ using Scheduler.Api.Data;
 namespace Scheduler.Api.Migrations
 {
     [DbContext(typeof(ScheduleDb))]
-    [Migration("20240304190714_Auth0ScheduleId")]
-    partial class Auth0ScheduleId
+    [Migration("20240318201310_ScheduleLinkInviteEdit3")]
+    partial class ScheduleLinkInviteEdit3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,14 +51,9 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("ReservationId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ReservationId");
-
-                    b.HasIndex("ScheduleId");
 
                     b.ToTable("Guests");
                 });
@@ -77,17 +72,12 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("HousekeeperId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("Type")
                         .HasColumnType("integer");
 
                     b.HasKey("Date", "RoomNumber", "RoomScheduleId");
 
                     b.HasIndex("HousekeeperId");
-
-                    b.HasIndex("ScheduleId");
 
                     b.HasIndex("RoomNumber", "RoomScheduleId");
 
@@ -199,23 +189,22 @@ namespace Scheduler.Api.Migrations
 
                     b.Property<DateTime?>("CreatedAt")
                         .IsRequired()
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Disabled")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ExpiresAt")
                         .IsRequired()
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("RedeemedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ScheduleId")
-                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<int?>("UserId")
@@ -262,13 +251,7 @@ namespace Scheduler.Api.Migrations
                         .HasForeignKey("ReservationId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
-                        .WithMany("Guests")
-                        .HasForeignKey("ScheduleId");
-
                     b.Navigation("Reservation");
-
-                    b.Navigation("Schedule");
                 });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.HousekeepingTask", b =>
@@ -277,10 +260,6 @@ namespace Scheduler.Api.Migrations
                         .WithMany("Tasks")
                         .HasForeignKey("HousekeeperId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
-                        .WithMany("HousekeepingTasks")
-                        .HasForeignKey("ScheduleId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
                         .WithMany("HousekeepingTasks")
@@ -291,8 +270,6 @@ namespace Scheduler.Api.Migrations
                     b.Navigation("Housekeeper");
 
                     b.Navigation("Room");
-
-                    b.Navigation("Schedule");
                 });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Reservation", b =>
@@ -327,8 +304,7 @@ namespace Scheduler.Api.Migrations
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("InviteLinks")
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Scheduler.Api.Data.Models.User", "User")
                         .WithMany("Invites")
@@ -353,10 +329,6 @@ namespace Scheduler.Api.Migrations
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Schedule", b =>
                 {
-                    b.Navigation("Guests");
-
-                    b.Navigation("HousekeepingTasks");
-
                     b.Navigation("InviteLinks");
 
                     b.Navigation("Reservations");

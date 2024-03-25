@@ -18,11 +18,19 @@ public class User : IModel
 	[InverseProperty(nameof(ScheduleInviteLink.User))]
 	public ICollection<ScheduleInviteLink>? Invites { get; set; } = new List<ScheduleInviteLink>();
 
-	public UserRoles Role(int scheduleId)
+	public UserRoles Role(int? scheduleId)
 	{
-		var inviteLink = Invites!.SingleOrDefault(invite => invite.ScheduleId == scheduleId);
-		if(inviteLink is null) return UserRoles.None;
-		return inviteLink.Role!.Value;
+		if (Invites is null) throw new NullReferenceException("Invites is null.");
+		var validInvites = Invites.Where(invite => !invite.Disabled);
+
+		if (scheduleId is null)
+			if (validInvites.Any(invite => invite.Role == UserRoles.Admin)) 
+				return UserRoles.Admin;
+
+		var inviteLink = validInvites!.FirstOrDefault(invite => invite.ScheduleId == scheduleId);
+		return inviteLink is null 
+			? UserRoles.None 
+			: inviteLink.Role!.Value;
 	}
 
 	public void AutoIncrementPrimaryKey()

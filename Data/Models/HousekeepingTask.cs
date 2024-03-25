@@ -13,7 +13,7 @@ public class HousekeepingTask : IModel
 	public DateOnly? Date { get; set; }
 	[EnumDataType(typeof(HousekeepingTaskType))]
 	public HousekeepingTaskType? Type { get; set; } = HousekeepingTaskType.None;
-	
+
 	[ForeignKey(nameof(Room.Number))]
 	public int? RoomNumber { get; set; }
 
@@ -26,10 +26,6 @@ public class HousekeepingTask : IModel
 	public int? HousekeeperId { get; set; }
 
 	public User? Housekeeper { get; set; }
-
-	[ForeignKey(nameof(Models.Schedule.Id))]
-	public int? ScheduleId { get; set; }
-	public Schedule? Schedule { get; set; }
 
 	public void AutoIncrementPrimaryKey() { }
 
