@@ -30,9 +30,11 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Create([FromBody] HousekeepingTask task)
 	{
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
 		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		if (result.IsAuthorized) return Unauthorized(result.Errors);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 
 		var isValid = Validator.Validate(task);
 		if (!isValid.IsValid) return BadRequest(isValid.Errors);
@@ -48,9 +50,11 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Update([FromBody] HousekeepingTask task)
 	{
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
 		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		if (result.IsAuthorized) return Unauthorized(result.Errors);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 
 		var validationResult = Validator.Validate(task);
 		return validationResult.IsValid ? Ok(await Crud.Update(task)) : BadRequest(validationResult.Errors);
@@ -63,9 +67,11 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Delete([FromBody] HousekeepingTask task)
 	{
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
 		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		if (result.IsAuthorized) return Unauthorized(result.Errors);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 
 		return Ok(await Crud.Delete(task.GetPrimaryKey()));
 	}

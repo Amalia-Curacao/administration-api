@@ -12,3 +12,15 @@ public enum UserRoles
 	Manager = 3,
 	Owner = 4,
 }
+
+public static class UserRolesExtensions
+{
+	public static bool HasAuthorityOver(this UserRoles role, UserRoles other) => role switch
+	{
+		UserRoles.Admin => true,
+		UserRoles.Housekeeper => other == UserRoles.None,
+		UserRoles.Manager => other == UserRoles.Housekeeper || other == UserRoles.None,
+		UserRoles.Owner => other == UserRoles.Manager || other == UserRoles.Housekeeper || other == UserRoles.None,
+		_ => false,
+	};
+}

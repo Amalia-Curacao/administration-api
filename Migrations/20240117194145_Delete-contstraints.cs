@@ -49,7 +49,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.AddForeignKey(
 				name: "FK_Housekeepers_Schedules_ScheduleId",
 				table: "Housekeepers",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id",
 				onDelete: ReferentialAction.Cascade);
@@ -67,13 +67,13 @@ namespace Scheduler.Api.Migrations
 				table: "HousekeepingTasks",
 				columns: new[] { "RoomNumber", "RoomScheduleId" },
 				principalTable: "Rooms",
-				principalColumns: new[] { "Number", "ScheduleId" },
+				principalColumns: new[] { "Number", "_scheduleId" },
 				onDelete: ReferentialAction.Cascade);
 
 			migrationBuilder.AddForeignKey(
 				name: "FK_HousekeepingTasks_Schedules_ScheduleId",
 				table: "HousekeepingTasks",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id",
 				onDelete: ReferentialAction.Cascade);
@@ -83,13 +83,13 @@ namespace Scheduler.Api.Migrations
 				table: "Reservations",
 				columns: new[] { "RoomNumber", "RoomScheduleId" },
 				principalTable: "Rooms",
-				principalColumns: new[] { "Number", "ScheduleId" },
+				principalColumns: new[] { "Number", "_scheduleId" },
 				onDelete: ReferentialAction.SetNull);
 
 			migrationBuilder.AddForeignKey(
 				name: "FK_Reservations_Schedules_ScheduleId",
 				table: "Reservations",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id",
 				onDelete: ReferentialAction.Cascade);
@@ -136,7 +136,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.AddForeignKey(
 				name: "FK_Housekeepers_Schedules_ScheduleId",
 				table: "Housekeepers",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id");
 
@@ -152,12 +152,12 @@ namespace Scheduler.Api.Migrations
 				table: "HousekeepingTasks",
 				columns: new[] { "RoomNumber", "RoomScheduleId" },
 				principalTable: "Rooms",
-				principalColumns: new[] { "Number", "ScheduleId" });
+				principalColumns: new[] { "Number", "_scheduleId" });
 
 			migrationBuilder.AddForeignKey(
 				name: "FK_HousekeepingTasks_Schedules_ScheduleId",
 				table: "HousekeepingTasks",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id");
 
@@ -166,12 +166,12 @@ namespace Scheduler.Api.Migrations
 				table: "Reservations",
 				columns: new[] { "RoomNumber", "RoomScheduleId" },
 				principalTable: "Rooms",
-				principalColumns: new[] { "Number", "ScheduleId" });
+				principalColumns: new[] { "Number", "_scheduleId" });
 
 			migrationBuilder.AddForeignKey(
 				name: "FK_Reservations_Schedules_ScheduleId",
 				table: "Reservations",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id");
 		}

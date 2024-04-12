@@ -14,6 +14,7 @@ public class ScheduleInviteLink : IModel
 	[Required]
 	public UserRoles? Role { get; set; }
 	public string? Code { get; set; }
+	public string Note { get; set; } = "";
 	[Required]
 	public DateTime? CreatedAt { get; set; }
 	[Required]
@@ -39,6 +40,7 @@ public class ScheduleInviteLink : IModel
 			User = user;
 			RedeemedAt = DateTime.Now;
 			Code = null;
+			Note = "";
 		}
 
 	}

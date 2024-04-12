@@ -42,7 +42,9 @@ public sealed class RoomsController : Controller
 	public async Task<ObjectResult> Get([FromRoute] int ScheduleId)
 	{
 		var requirement = new RoleRequirement(RoleRequirement, ScheduleId, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager, UserRoles.Housekeeper);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
 		return result.IsAuthorized
 			? Ok(JsonSerializer.Serialize(await Crud.Get(r => r.ScheduleId == ScheduleId), SerializerOptions))
 			: Unauthorized(result.Errors);
@@ -55,7 +57,9 @@ public sealed class RoomsController : Controller
 	public async Task<ObjectResult> Create([FromBody] Room room)
 	{
 		var requirement = new RoleRequirement(RoleRequirement, room.ScheduleId, UserRoles.Admin, UserRoles.Owner);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
 		return result.IsAuthorized
 			? Ok((await Crud.Add(false, room))[0])
 			: Unauthorized(result.Errors);
@@ -68,7 +72,9 @@ public sealed class RoomsController : Controller
 	public async Task<ObjectResult> Update([FromBody] Room room)
 	{
 		var requirement = new RoleRequirement(RoleRequirement, room.ScheduleId, UserRoles.Admin, UserRoles.Owner);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
 		return result.IsAuthorized
 			? Ok(await Crud.Update(room))
 			: Unauthorized(result.Errors);
@@ -81,7 +87,9 @@ public sealed class RoomsController : Controller
 	public async Task<ObjectResult> Delete([FromRoute] int Number, [FromRoute] int ScheduleId)
 	{
 		var requirement = new RoleRequirement(RoleRequirement, ScheduleId, UserRoles.Admin, UserRoles.Owner);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
 		return result.IsAuthorized
 			? Ok(await Crud.Delete(new HashSet<Key>(new Key[] { new(nameof(Room.Number), Number), new(nameof(Room.ScheduleId), ScheduleId) })))
 			: Unauthorized(result.Errors);

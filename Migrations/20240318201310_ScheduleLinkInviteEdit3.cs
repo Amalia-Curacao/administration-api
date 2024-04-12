@@ -1,18 +1,17 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Scheduler.Api.Migrations
 {
-    /// <inheritdoc />
-    public partial class ScheduleLinkInviteEdit3 : Migration
+	/// <inheritdoc />
+	public partial class ScheduleLinkInviteEdit3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "ScheduleId",
+                name: "_scheduleId",
                 table: "ScheduleInviteLinks",
                 type: "integer",
                 nullable: true,
@@ -49,7 +48,7 @@ namespace Scheduler.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
-                name: "ScheduleId",
+                name: "_scheduleId",
                 table: "ScheduleInviteLinks",
                 type: "integer",
                 nullable: false,

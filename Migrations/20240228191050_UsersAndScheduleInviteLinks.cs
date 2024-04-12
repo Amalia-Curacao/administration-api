@@ -44,11 +44,11 @@ namespace Scheduler.Api.Migrations
 				table: "Housekeepers");
 
 			migrationBuilder.DropColumn(
-				name: "ScheduleId",
+				name: "_scheduleId",
 				table: "HousekeepingTasks");
 
 			migrationBuilder.DropColumn(
-				name: "ScheduleId",
+				name: "_scheduleId",
 				table: "Housekeepers");
 
 			migrationBuilder.RenameTable(
@@ -115,7 +115,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.CreateIndex(
 				name: "IX_ScheduleInviteLinks_ScheduleId",
 				table: "ScheduleInviteLinks",
-				column: "ScheduleId");
+				column: "_scheduleId");
 
 			migrationBuilder.CreateIndex(
 				name: "IX_ScheduleInviteLinks_UserId",
@@ -133,7 +133,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.AddForeignKey(
 				name: "FK_Reservations_Schedules_ScheduleId",
 				table: "Reservations",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id");
 		}
@@ -177,13 +177,13 @@ namespace Scheduler.Api.Migrations
 				oldType: "integer");
 
 			migrationBuilder.AddColumn<int>(
-				name: "ScheduleId",
+				name: "_scheduleId",
 				table: "HousekeepingTasks",
 				type: "integer",
 				nullable: true);
 
 			migrationBuilder.AddColumn<int>(
-				name: "ScheduleId",
+				name: "_scheduleId",
 				table: "Housekeepers",
 				type: "integer",
 				nullable: true);
@@ -201,17 +201,17 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.CreateIndex(
 				name: "IX_HousekeepingTasks_ScheduleId",
 				table: "HousekeepingTasks",
-				column: "ScheduleId");
+				column: "_scheduleId");
 
 			migrationBuilder.CreateIndex(
 				name: "IX_Housekeepers_ScheduleId",
 				table: "Housekeepers",
-				column: "ScheduleId");
+				column: "_scheduleId");
 
 			migrationBuilder.AddForeignKey(
 				name: "FK_Housekeepers_Schedules_ScheduleId",
 				table: "Housekeepers",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id",
 				onDelete: ReferentialAction.Cascade);
@@ -227,7 +227,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.AddForeignKey(
 				name: "FK_HousekeepingTasks_Schedules_ScheduleId",
 				table: "HousekeepingTasks",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id",
 				onDelete: ReferentialAction.Cascade);
@@ -235,7 +235,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.AddForeignKey(
 				name: "FK_Reservations_Schedules_ScheduleId",
 				table: "Reservations",
-				column: "ScheduleId",
+				column: "_scheduleId",
 				principalTable: "Schedules",
 				principalColumn: "Id",
 				onDelete: ReferentialAction.Cascade);

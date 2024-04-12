@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+[Obsolete]
 public static class TempDataExtensions
 {
 	private static readonly JsonSerializerOptions NonCycleJsonSerializationOptions = new() { ReferenceHandler = ReferenceHandler.IgnoreCycles };

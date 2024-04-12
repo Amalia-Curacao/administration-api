@@ -2,7 +2,9 @@ using Creative.Database.Data;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Scheduler.Api.Controllers;
 using Scheduler.Api.Controllers.Internal.Auth0;
+using Scheduler.Api.Controllers.Services;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
 using Scheduler.Api.Data.Validators;
@@ -11,8 +13,10 @@ using Scheduler.Api.Security.Authenticator.Auth0;
 using Scheduler.Api.Security.Authorization;
 using Scheduler.Api.Security.Registration;
 using Scheduler.Api.UserProcess;
+using Scheduler.Api.UserProcess.Authenticator.InHouse;
 using Scheduler.Api.UserProcess.Authorization;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +51,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<Auth0Api>(_ => new(new Uri(domain)));
 builder.Services.AddScoped<IAuthorizer, Authorizer>();
 builder.Services.AddScoped<IRegisterUserService, RegisterUser>(services => new RegisterUser(createDb(), services.GetService<IValidator<User>>()!));
-builder.Services.AddScoped<IAuthenticator, Auth0Authenticator>(services => new Auth0Authenticator(createDb(), services.GetService<Auth0Api>()!, services.GetService<IRegisterUserService>()!));
+builder.Services.AddScoped<Authenticator>(services => new Authenticator(createDb()));
+builder.Services.AddScoped<IAuthenticator, Authenticator>(services => services.GetService<Authenticator>()!);
+builder.Services.AddScoped<Auth0Authenticator>(services => new Auth0Authenticator(createDb(), services.GetService<Auth0Api>()!, services.GetService<IRegisterUserService>()!));
 builder.Services.AddScoped<UserProcessor>();
 
 // Register validators
@@ -59,7 +65,13 @@ builder.Services.AddScoped<IValidator<ScheduleInviteLink>, ScheduleInviteLinkVal
 builder.Services.AddScoped<IValidator<HousekeepingTask>, HousekeepingTaskValidator>();
 builder.Services.AddScoped<IValidator<ScheduleInviteLink>, ScheduleInviteLinkValidator>();
 
-builder.Services.AddControllers();
+// Register services
+builder.Services.AddScoped<ScheduleInviteLinkService>();
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+		{
+			options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+		});
 var app = builder.Build();
 
 

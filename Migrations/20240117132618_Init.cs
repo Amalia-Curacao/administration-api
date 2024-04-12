@@ -88,7 +88,7 @@ namespace Scheduler.Api.Migrations
 						name: "FK_HousekeepingTasks_Rooms_RoomNumber_RoomScheduleId",
 						columns: x => new { x.RoomNumber, x.RoomScheduleId },
 						principalTable: "Rooms",
-						principalColumns: new[] { "Number", "ScheduleId" });
+						principalColumns: new[] { "Number", "_scheduleId" });
 					table.ForeignKey(
 						name: "FK_HousekeepingTasks_Schedules_ScheduleId",
 						column: x => x.ScheduleId,
@@ -122,7 +122,7 @@ namespace Scheduler.Api.Migrations
 						name: "FK_Reservations_Rooms_RoomNumber_RoomScheduleId",
 						columns: x => new { x.RoomNumber, x.RoomScheduleId },
 						principalTable: "Rooms",
-						principalColumns: new[] { "Number", "ScheduleId" });
+						principalColumns: new[] { "Number", "_scheduleId" });
 					table.ForeignKey(
 						name: "FK_Reservations_Schedules_ScheduleId",
 						column: x => x.ScheduleId,
@@ -161,7 +161,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.CreateIndex(
 				name: "IX_Housekeepers_ScheduleId",
 				table: "Housekeepers",
-				column: "ScheduleId");
+				column: "_scheduleId");
 
 			migrationBuilder.CreateIndex(
 				name: "IX_HousekeepingTasks_HousekeeperId",
@@ -176,7 +176,7 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.CreateIndex(
 				name: "IX_HousekeepingTasks_ScheduleId",
 				table: "HousekeepingTasks",
-				column: "ScheduleId");
+				column: "_scheduleId");
 
 			migrationBuilder.CreateIndex(
 				name: "IX_Reservations_RoomNumber_RoomScheduleId",
@@ -186,12 +186,12 @@ namespace Scheduler.Api.Migrations
 			migrationBuilder.CreateIndex(
 				name: "IX_Reservations_ScheduleId",
 				table: "Reservations",
-				column: "ScheduleId");
+				column: "_scheduleId");
 
 			migrationBuilder.CreateIndex(
 				name: "IX_Rooms_ScheduleId",
 				table: "Rooms",
-				column: "ScheduleId");
+				column: "_scheduleId");
 		}
 
 		/// <inheritdoc />

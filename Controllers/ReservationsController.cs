@@ -41,12 +41,16 @@ public class ReservationsController : Controller
 	{
 		if (reservation is null) return BadRequest("Reservation cannot be null.");
 
-		var requirement = new RoleRequirement(RoleRequirement, reservation.ScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		if (result.IsAuthorized) return Unauthorized(result.Errors);
-
 		// Validates properties
 		var validationResult = Validator.Validate(reservation);
+		if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+
+		var requirement = new RoleRequirement(RoleRequirement, reservation.ScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 		// Checks if the reservation can fit in the room.
 		if (!await CanFit(reservation)) validationResult.Errors.Add(RoomFull);
 
@@ -63,12 +67,16 @@ public class ReservationsController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Update([FromBody] Reservation reservation)
 	{
-		var requirement = new RoleRequirement(RoleRequirement, reservation.ScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		if (result.IsAuthorized) return Unauthorized(result.Errors);
-
 		// Validates properties
 		var validationResult = Validator.Validate(reservation);
+		if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var requirement = new RoleRequirement(RoleRequirement, reservation.ScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
+
 		// Checks if the reservation exists
 		if (await Crud.TryGet(reservation.GetPrimaryKey()) is null) validationResult.Errors.Add(ReservationNotFound);
 		// Checks if the reservation can fit in the room.
@@ -87,12 +95,14 @@ public class ReservationsController : Controller
 	[HttpDelete($"[controller]/[action]/{{{nameof(Reservation.Id)}}}")]
 	public async Task<ObjectResult> Delete([FromRoute] int Id)
 	{
-		var reservation = await Crud.Get(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) }));
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var reservation = await Crud.Get(new HashSet<Key>([new(nameof(Reservation.Id), Id)]));
 		var requirement = new RoleRequirement(RoleRequirement, reservation.ScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		if (result.IsAuthorized) return Unauthorized(result.Errors);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 
-		return Ok(await Crud.Delete(new HashSet<Key>(new Key[] { new(nameof(Reservation.Id), Id) })));
+		return Ok(await Crud.Delete(new HashSet<Key>([new(nameof(Reservation.Id), Id)])));
 	}
 
 	// Checks if the reservation can fit in the room from the same schedule and ignoers reservation with the same Id.

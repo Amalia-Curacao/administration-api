@@ -75,12 +75,12 @@ namespace Scheduler.Api.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.ToTable("Housekeepers");
                 });
@@ -99,7 +99,7 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("RoomScheduleId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("Type")
@@ -109,7 +109,7 @@ namespace Scheduler.Api.Migrations
 
                     b.HasIndex("HousekeeperId");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.HasIndex("RoomNumber", "RoomScheduleId");
 
@@ -157,12 +157,12 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("RoomType")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.HasIndex("RoomNumber", "RoomScheduleId");
 
@@ -174,7 +174,7 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("Number")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ScheduleId")
+                    b.Property<int>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("Floor")
@@ -184,9 +184,9 @@ namespace Scheduler.Api.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.HasKey("Number", "ScheduleId");
+                    b.HasKey("Number", "_scheduleId");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.ToTable("Rooms");
                 });
@@ -221,7 +221,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Housekeepers")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Schedule");
@@ -236,7 +236,7 @@ namespace Scheduler.Api.Migrations
 
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("HousekeepingTasks")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
@@ -255,7 +255,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Reservations")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
@@ -272,7 +272,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Rooms")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

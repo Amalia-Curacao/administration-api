@@ -10,6 +10,12 @@ public sealed class Schedule : IModel
 {
 	public int? Id { get; set; }
 	public string? Name { get; set; }
+	[NotMapped]
+	public UserRoles? Role { get; set; }
+	[NotMapped]
+	public string[]? Owners { get; set; }
+	[NotMapped]
+	public string? OwnerInviteCode { get; set; }
 
 	[InverseProperty(nameof(Room.Schedule))]
 	public ICollection<Room>? Rooms { get; set; } = new HashSet<Room>();

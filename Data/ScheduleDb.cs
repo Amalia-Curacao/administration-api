@@ -84,6 +84,7 @@ public class ScheduleDb : DatabaseContext
 	public DbSet<ScheduleInviteLink> ScheduleInviteLinks { get; set; }
 	public DbSet<User> Users { get; set; }
 	public DbSet<HousekeepingTask> HousekeepingTasks { get; set; }
+	public DbSet<AccessToken> AccessTokens { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -119,6 +120,12 @@ public class ScheduleDb : DatabaseContext
 			.WithOne(h => h.Housekeeper)
 			.OnDelete(DeleteBehavior.SetNull);
 
+		modelBuilder.Entity<AccessToken>()
+			.HasIndex(a => a.Token)
+			.IsUnique();
 
+		modelBuilder.Entity<ScheduleInviteLink>()
+			.HasIndex(s => s.Code)
+			.IsUnique();
 	}
 }

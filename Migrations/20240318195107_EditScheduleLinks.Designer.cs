@@ -125,12 +125,12 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("RoomType")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.HasIndex("RoomNumber", "RoomScheduleId");
 
@@ -142,7 +142,7 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("Number")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ScheduleId")
+                    b.Property<int>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("Floor")
@@ -152,9 +152,9 @@ namespace Scheduler.Api.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.HasKey("Number", "ScheduleId");
+                    b.HasKey("Number", "_scheduleId");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.ToTable("Rooms");
                 });
@@ -204,7 +204,7 @@ namespace Scheduler.Api.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .IsRequired()
                         .HasColumnType("integer");
 
@@ -213,7 +213,7 @@ namespace Scheduler.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.HasIndex("UserId");
 
@@ -277,7 +277,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Reservations")
-                        .HasForeignKey("ScheduleId");
+                        .HasForeignKey("_scheduleId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
                         .WithMany("Reservations")
@@ -293,7 +293,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Rooms")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -304,7 +304,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("InviteLinks")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

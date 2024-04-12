@@ -1,8 +1,4 @@
-﻿using Creative.Api.Implementations.EntityFrameworkCore;
-using Creative.Api.Interfaces;
-using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
 using Scheduler.Api.Security.Authorization.Roles;
@@ -11,43 +7,42 @@ using Scheduler.Api.UserProcess;
 namespace Scheduler.Api.Controllers;
 public class UsersController : Controller
 {
-	private ICrud<User> Crud { get; }
-	private IValidator<User> Validator { get; }
 	private UserProcessor UserProcessor { get; }
 	private RoleRequirement RoleRequirement { get; }
-	public UsersController(ScheduleDb db, IValidator<User> validator, UserProcessor userProcessor)
+	public UsersController(ScheduleDb db, UserProcessor userProcessor)
 	{
-		Crud = new Crud<User>(db, db.Users
-			.Include(u => u.Invites!)
-				.ThenInclude(i => i.Schedule!));
-		Validator = validator;
 		UserProcessor = userProcessor;
 		RoleRequirement = new RoleRequirement(db);
 	}
 
-	[HttpGet($"[controller]/[action]/{{{nameof(ScheduleInviteLink.ScheduleId)}}}")]
-	public async Task<ObjectResult> Housekeepers([FromRoute] int ScheduleId)
-	{
-		var requirement = new RoleRequirement(RoleRequirement, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
-		return result.IsAuthorized
-			? Ok(await Crud.Get(u => u.Role(ScheduleId) == UserRoles.Housekeeper))
-			: Unauthorized(result.Errors);
-	}
 
-	[HttpPut($"[controller]/[action]")]
+	/*[HttpPut($"[controller]/[action]")]
 	public async Task<ObjectResult> Update([FromBody] User user)
 	{
 		var requirement = new RoleRequirement(RoleRequirement, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
 		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 
 		var validationResult = Validator.Validate(user);
 		if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
-		var updatedUser = await Crud.Update(user);
+		var originalUser = await Crud.Get(user.GetPrimaryKey());
+		var updatedUser = await Crud.Update(new User()
+		{
+			FirstName = user.FirstName,
+			LastName = user.LastName,
+			Note = user.Note,
+			
+			AccessTokens = originalUser.AccessTokens,
+			Invites = originalUser.Invites,
+			Auth0Id = originalUser.Auth0Id,
+			Id = originalUser.Id,
+			Tasks = originalUser.Tasks
+		});
 
 		return Ok(updatedUser);
-	}
+	}*/
 
 	/// <summary> Api endpoint for getting a user role in a schedule. </summary>
 	/// <returns>
@@ -58,7 +53,9 @@ public class UsersController : Controller
 	public async Task<ObjectResult> Role([FromRoute] int? ScheduleId)
 		{
 		var requirement = new RoleRequirement(RoleRequirement, ScheduleId, UserRoles.None);
-		var result = await UserProcessor.Process(HttpContext.AccessToken(), requirement);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
 		return result.IsAuthorized
 			? Ok(result.AuthenticatedUser!.Role(ScheduleId))
 			: Unauthorized(result.Errors);

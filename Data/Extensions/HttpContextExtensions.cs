@@ -2,19 +2,35 @@
 
 internal static class HttpContextExtensions
 {
-	public static string AccessToken(this HttpContext context)
+	public const string MissingAccessTokenException = $"Access token could not be found in the request headers; Add it in the 'Authorization' header under 'Bearer' for Auth0 or 'Token' for the Creative.Security.";
+
+	public static string? Auth0AccessToken(this HttpContext context)
 	{
 		if (context.Request.Headers.TryGetValue("Authorization", out var authHeader))
 		{
 			bool take = false;
-			var accessToken = authHeader.ToString().Split(' ').SingleOrDefault(s =>
+			return authHeader.ToString().Split(' ').SingleOrDefault(s =>
 			{
 				if (take) return true;
 				if (s == "Bearer") take = true;
 				return false;
-			}) ?? throw new InvalidOperationException("The access token is not in the request headers.");
-			return accessToken;
+			});
 		}
-		throw new InvalidOperationException("The access token is not in the request headers.");
+		return null;
+	}
+
+	public static string? AccessToken(this HttpContext context)
+	{
+		if (context.Request.Headers.TryGetValue("Authorization", out var authHeader))
+		{
+			bool take = false;
+			return authHeader.ToString().Split(' ').SingleOrDefault(s =>
+			{
+				if (take) return true;
+				if (s == "Token") take = true;
+				return false;
+			});
+		}
+		return null;
 	}
 }

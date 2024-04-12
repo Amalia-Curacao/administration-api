@@ -17,10 +17,41 @@ namespace Scheduler.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.15")
+                .HasAnnotation("ProductVersion", "7.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Scheduler.Api.Data.Models.AccessToken", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AccessTokens");
+                });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Guest", b =>
                 {
@@ -122,12 +153,12 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("RoomType")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.HasIndex("RoomNumber", "RoomScheduleId");
 
@@ -139,7 +170,7 @@ namespace Scheduler.Api.Migrations
                     b.Property<int?>("Number")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ScheduleId")
+                    b.Property<int>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("Floor")
@@ -149,9 +180,9 @@ namespace Scheduler.Api.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.HasKey("Number", "ScheduleId");
+                    b.HasKey("Number", "_scheduleId");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("_scheduleId");
 
                     b.ToTable("Rooms");
                 });
@@ -194,13 +225,17 @@ namespace Scheduler.Api.Migrations
                         .IsRequired()
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("RedeemedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int?>("_scheduleId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("UserId")
@@ -208,7 +243,10 @@ namespace Scheduler.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("_scheduleId");
 
                     b.HasIndex("UserId");
 
@@ -232,12 +270,20 @@ namespace Scheduler.Api.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Scheduler.Api.Data.Models.AccessToken", b =>
+                {
+                    b.HasOne("Scheduler.Api.Data.Models.User", "User")
+                        .WithMany("AccessTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Guest", b =>
@@ -272,7 +318,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Reservations")
-                        .HasForeignKey("ScheduleId");
+                        .HasForeignKey("_scheduleId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
                         .WithMany("Reservations")
@@ -288,7 +334,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("Rooms")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -299,7 +345,7 @@ namespace Scheduler.Api.Migrations
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("InviteLinks")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("_scheduleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Scheduler.Api.Data.Models.User", "User")
@@ -334,6 +380,8 @@ namespace Scheduler.Api.Migrations
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.User", b =>
                 {
+                    b.Navigation("AccessTokens");
+
                     b.Navigation("Invites");
 
                     b.Navigation("Tasks");

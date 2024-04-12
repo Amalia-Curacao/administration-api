@@ -12,18 +12,53 @@ using Scheduler.Api.Data;
 namespace Scheduler.Api.Migrations
 {
     [DbContext(typeof(ScheduleDb))]
-    [Migration("20240228191050_UsersAndScheduleInviteLinks")]
-    partial class UsersAndScheduleInviteLinks
+    [Migration("20240402231906_SessionId")]
+    partial class SessionId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.15")
+                .HasAnnotation("ProductVersion", "7.0.17")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Scheduler.Api.Data.Models.AccessToken", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AccessTokens");
+                });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.Guest", b =>
                 {
@@ -184,34 +219,35 @@ namespace Scheduler.Api.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
                     b.Property<string>("Code")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("CreatedAt")
                         .IsRequired()
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Disabled")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ExpiresAt")
                         .IsRequired()
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("RedeemedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
                     b.Property<int?>("_scheduleId")
-                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.HasIndex("_scheduleId");
 
@@ -245,6 +281,17 @@ namespace Scheduler.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Scheduler.Api.Data.Models.AccessToken", b =>
+                {
+                    b.HasOne("Scheduler.Api.Data.Models.User", "User")
+                        .WithMany("AccessTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Scheduler.Api.Data.Models.Guest", b =>
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Reservation", "Reservation")
@@ -276,7 +323,7 @@ namespace Scheduler.Api.Migrations
             modelBuilder.Entity("Scheduler.Api.Data.Models.Reservation", b =>
                 {
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
-                        .WithMany()
+                        .WithMany("Reservations")
                         .HasForeignKey("_scheduleId");
 
                     b.HasOne("Scheduler.Api.Data.Models.Room", "Room")
@@ -305,8 +352,7 @@ namespace Scheduler.Api.Migrations
                     b.HasOne("Scheduler.Api.Data.Models.Schedule", "Schedule")
                         .WithMany("InviteLinks")
                         .HasForeignKey("_scheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Scheduler.Api.Data.Models.User", "User")
                         .WithMany("Invites")
@@ -333,11 +379,15 @@ namespace Scheduler.Api.Migrations
                 {
                     b.Navigation("InviteLinks");
 
+                    b.Navigation("Reservations");
+
                     b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("Scheduler.Api.Data.Models.User", b =>
                 {
+                    b.Navigation("AccessTokens");
+
                     b.Navigation("Invites");
 
                     b.Navigation("Tasks");
