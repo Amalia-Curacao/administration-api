@@ -30,6 +30,7 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Create([FromBody] HousekeepingTask task)
 	{
+		if (task is null) return BadRequest("Housekeeping task is null.");
 		var accessToken = HttpContext.AccessToken();
 		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
 		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
