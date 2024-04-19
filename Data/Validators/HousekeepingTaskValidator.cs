@@ -13,8 +13,6 @@ public class HousekeepingTaskValidator : AbstractValidator<HousekeepingTask>
 			.NotNull().WithMessage("Housekeeping task must have a valid room number.");
 		RuleFor(task => task.RoomScheduleId)
 			.NotNull().WithMessage("Housekeeping task must have a valid room schedule id.");
-		RuleFor(task => task.ScheduleId)
-			.NotNull().WithMessage("Housekeeping task need to belong to a schedule.");
 		RuleFor(task => task.Type)
 			.NotNull().WithMessage("Housekeeping task is required to have a type.")
 			.NotEqual(HousekeepingTaskType.None).WithMessage("Housekeeping task can not have type none.");

@@ -1,79 +1,85 @@
-﻿using Creative.Api.Data;
-using Creative.Api.Implementations.EntityFrameworkCore;
+﻿using Creative.Api.Implementations.EntityFrameworkCore;
 using Creative.Api.Interfaces;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
+using Scheduler.Api.Security.Authorization.Roles;
+using Scheduler.Api.UserProcess;
 
 namespace Scheduler.Api.Controllers;
 
 public class HousekeepersController : Controller
 {
-	public ICrud<Housekeeper> _crud { get; init; }
-	public IValidator<Housekeeper> _validator { get; init; }
-	public HousekeepersController(ScheduleDb db, IValidator<Housekeeper> validator)
+	private ICrud<ScheduleInviteLink> Crud { get; }
+	private IRead<User> UserReader { get; }
+	private IRead<Room> RoomReader { get; }
+	private RoleRequirement RoleRequirement { get; }
+	private UserProcessor UserProcessor { get; }
+
+	public HousekeepersController(ScheduleDb db, UserProcessor userProcessor)
 	{
-		_crud = new Crud<Housekeeper>(db);
-		_validator = validator;
+		Crud = new Crud<ScheduleInviteLink>(db, db.Set<ScheduleInviteLink>().Include(i => i.Schedule!).Include(i => i.User!));
+		UserReader = new Crud<User>(db, db.Users.Include(u => u.Invites!));
+		RoomReader = new Crud<Room>(db, db.Rooms.Include(r => r.Reservations!).Include(r => r.HousekeepingTasks!));
+		RoleRequirement = new RoleRequirement(db);
+		UserProcessor = userProcessor;
 	}
 
-	/// <summary> Api endpoint for getting all housekeepers from a schedule. </summary>
-	/// <returns>
-	/// Status 200 (OK) with all housekeepers from a schedule in the database.
-	/// </returns>
-	[HttpGet($"[controller]/[action]/{{{nameof(Housekeeper.ScheduleId)}}}")]
-	public async Task<ObjectResult> GetAll([FromRoute] int ScheduleId)
-		=> Ok((await _crud.GetAll()).Where(housekeeper => housekeeper.ScheduleId == ScheduleId));
-
-	/// <summary> Api endpoint for getting a specific housekeeper in the database.</summary>
-	/// <returns>
-	/// Status 200 (OK) with the housekeeper with the given id.
-	/// Status 400 (Bad request) with error message, when the housekeeper could not be found.
-	/// </returns>
-	[HttpGet($"[controller]/[action]/{{{nameof(Housekeeper.Id)}}}")]
-	public async Task<ObjectResult> Get([FromRoute] int Id)
+	[HttpGet($"[controller]/[action]/{{scheduleId}}/{{userId}}")]
+	[HttpGet($"[controller]/[action]/{{scheduleId}}/{{userId}}/{{note}}")]
+	public async Task<ObjectResult> Note([FromRoute] int userId, [FromRoute] int scheduleId, [FromRoute] string? note)
 	{
-		var housekeeper = await _crud.TryGet(new HashSet<Key>(new Key[] { new(nameof(Housekeeper.Id), Id) }));
-		return housekeeper is null ? BadRequest(new ValidationException($"{nameof(Housekeeper)} could not be located.")) : Ok(housekeeper);
+		var user = await UserReader.Get([new(nameof(Data.Models.User.Id), userId)]);
+		if(user is null) return BadRequest("User not found.");
+
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+
+		var requirement = new RoleRequirement(RoleRequirement, scheduleId, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized && result.AuthenticatedUser!.Id != user.Id) return Unauthorized(result.Errors);
+
+		var inviteLink = (await Crud.Get(i => i.UserId == user.Id && i.ScheduleId == scheduleId)).FirstOrDefault();
+		if (inviteLink is null) return BadRequest("Invite link not found.");
+
+		// TODO refactor
+		inviteLink.Note = note ?? "";
+		var updated = await Crud.Update(inviteLink);
+		updated.User!.Note = updated.Note;
+		return Ok(updated.User);
 	}
 
-	/// <summary> Api endpoint for creating housekeepers in the database. </summary>
-	/// <returns>
-	/// Status 200 (OK) with the new set of housekeepers, when the housekeepers has been created.
-	/// Status 400 (Bad request) with error message, when properties are invalid.
-	/// </returns>
-	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Create([FromBody] Housekeeper housekeeper)
+	[HttpGet($"[controller]/[action]/{{{nameof(ScheduleInviteLink.ScheduleId)}}}")]
+	public async Task<ObjectResult> Get([FromRoute] int ScheduleId)
 	{
-		var result = _validator.Validate(housekeeper);
-		if (!result.IsValid)
-			return BadRequest(result.Errors);
-
-		return Ok(await _crud.Add(true, housekeeper));
+		var requirement = new RoleRequirement(RoleRequirement, ScheduleId, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		return result.IsAuthorized
+			// TODO refactor
+			? Ok((await Crud.Get(i => i.Role == UserRoles.Housekeeper && i.ScheduleId == ScheduleId)).Where(i => i.User is not null).Select(i => { i.User!.Note = i.Note; return i.User; }))
+			: Unauthorized(result.Errors);
 	}
 
-	/// <summary> Api endpoint for updating housekeepers in the database. </summary>
-	/// <returns>
-	/// Status 200 (OK) with the new set of housekeepers, when the housekeepers has been updated.
-	/// Status 400 (Bad request) with error message, when properties are invalid.
-	/// </returns>
-	[HttpPost("[controller]/[action]")]
-	public async Task<ObjectResult> Update([FromBody] Housekeeper housekeeper)
+	[HttpGet($"[controller]/[action]/{{scheduleId}}")]
+	[HttpGet($"[controller]/[action]/{{scheduleId}}/{{userId}}")]
+	public async Task<ObjectResult> Rooms([FromRoute] int scheduleId, [FromRoute] int? userId)
 	{
-		var result = _validator.Validate(housekeeper);
-		if (!result.IsValid)
-			return BadRequest(result.Errors);
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
 
-		return Ok(await _crud.Update(housekeeper));
+		var requirement = new RoleRequirement(RoleRequirement, scheduleId, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager, UserRoles.Housekeeper);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
+
+		var user = userId is null ? result.AuthenticatedUser : await UserReader.TryGet([new(nameof(Data.Models.User.Id), userId)]);
+		if (user is null) return BadRequest("User not found.");
+
+		var rooms = await RoomReader.Get(r => r.ScheduleId == scheduleId);
+		return user.Role(scheduleId) != UserRoles.Housekeeper
+			? Ok(rooms)
+			: Ok(rooms.Select(r => { r.HousekeepingTasks = (r.HousekeepingTasks ?? []).Where(t => t.HousekeeperId == user.Id).ToArray(); return r; }));
 	}
-
-	/// <summary> Api endpoint for deleting a housekeeper in the database.</summary>
-	/// <returns>
-	/// Status 200 (OK) with the new set of housekeepers, when the housekeeper has been deleted.
-	/// </returns>
-	[HttpDelete("[controller]/[action]/{Id}")]
-	public async Task<ObjectResult> Delete([FromRoute] int Id)
-		=> Ok(await _crud.Delete(new HashSet<Key>() { new Key(nameof(Housekeeper.Id), Id)}));
-	
 }

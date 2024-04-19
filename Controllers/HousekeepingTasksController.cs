@@ -1,22 +1,27 @@
-﻿using Creative.Api.Data;
-using Creative.Api.Implementations.EntityFrameworkCore;
+﻿using Creative.Api.Implementations.EntityFrameworkCore;
 using Creative.Api.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Scheduler.Api.Data;
 using Scheduler.Api.Data.Models;
+using Scheduler.Api.Security.Authorization.Roles;
+using Scheduler.Api.UserProcess;
 
 namespace Scheduler.Api.Controllers;
-
 public class HousekeepingTasksController : Controller
 {
-	private ICrud<HousekeepingTask> _crud { get; init; }
-	private IValidator<HousekeepingTask> _validator { get; init; }
-	public HousekeepingTasksController(ScheduleDb db, IValidator<HousekeepingTask> validator)
+	private ICrud<HousekeepingTask> Crud { get; }
+	private IValidator<HousekeepingTask> Validator { get; }
+	private UserProcessor UserProcessor { get; }
+	private RoleRequirement RoleRequirement { get; }
+	public HousekeepingTasksController(ScheduleDb db, IValidator<HousekeepingTask> validator, UserProcessor userProcessor)
 	{
-		_crud = new Crud<HousekeepingTask>(db);
-		_validator = validator;
+		Crud = new Crud<HousekeepingTask>(db);
+		RoleRequirement = new RoleRequirement(db);
+		Validator = validator;
+		UserProcessor = userProcessor;
 	}
+
 	/// <summary> Creates a new housekeeping task in the database. </summary>
 	/// <returns>
 	/// Status 200 (OK) with the new set of housekeeping tasks, when the housekeeping task has been created.
@@ -25,10 +30,17 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Create([FromBody] HousekeepingTask task)
 	{
-		var isValid = _validator.Validate(task);
-		if (!isValid.IsValid)
-			return BadRequest(isValid.Errors);
-		return Ok(await _crud.Add(false, task));
+		if (task is null) return BadRequest("Housekeeping task is null.");
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
+
+		var isValid = Validator.Validate(task);
+		if (!isValid.IsValid) return BadRequest(isValid.Errors);
+
+		return Ok(await Crud.Add(false, task));
 	}
 
 	/// <summary> Updates a housekeeping task in the database. </summary>
@@ -39,10 +51,14 @@ public class HousekeepingTasksController : Controller
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Update([FromBody] HousekeepingTask task)
 	{
-		var isValid = _validator.Validate(task);
-		if (!isValid.IsValid)
-			return BadRequest(isValid.Errors);
-		return Ok(await _crud.Update(task));
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
+
+		var validationResult = Validator.Validate(task);
+		return validationResult.IsValid ? Ok(await Crud.Update(task)) : BadRequest(validationResult.Errors);
 	}
 
 	/// <summary> Deletes a housekeeping task in the database. </summary>
@@ -51,6 +67,13 @@ public class HousekeepingTasksController : Controller
 	/// </returns>
 	[HttpPost("[controller]/[action]")]
 	public async Task<ObjectResult> Delete([FromBody] HousekeepingTask task)
-		=> Ok(await _crud.Delete(task.GetPrimaryKey()));
+	{
+		var accessToken = HttpContext.AccessToken();
+		if (accessToken is null) return BadRequest(HttpContextExtensions.MissingAccessTokenException);
+		var requirement = new RoleRequirement(RoleRequirement, task.RoomScheduleId!.Value, UserRoles.Admin, UserRoles.Owner, UserRoles.Manager);
+		var result = await UserProcessor.Process(accessToken, requirement);
+		if (!result.IsAuthorized) return Unauthorized(result.Errors);
 
+		return Ok(await Crud.Delete(task.GetPrimaryKey()));
+	}
 }
